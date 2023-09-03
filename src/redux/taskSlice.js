@@ -1,56 +1,67 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit';
-import { persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import { createSlice } from '@reduxjs/toolkit';
+import { addTask, deleteTask, fetchTasks, toggleCompleted } from './operation';
 
-const tasksInitialState = [
-  { id: 0, text: 'Learn HTML and CSS', completed: true },
-  { id: 1, text: 'Get good at JavaScript', completed: true },
-  { id: 2, text: 'Master React', completed: false },
-  { id: 3, text: 'Discover Redux', completed: false },
-  { id: 4, text: 'Build amazing apps', completed: false },
-];
+const tasksInitialState = {
+  items: [],
+  isLoading: false,
+  error: null,
+};
 
 const tasksSlice = createSlice({
   name: 'tasks',
   initialState: tasksInitialState,
-  reducers: {
-    addTask: {
-      reducer(state, action) {
-        state.push(action.payload);
-      },
-      prepare(text) {
-        return {
-          payload: {
-            text,
-            id: nanoid(),
-            completed: false,
-          },
-        };
-      },
+  extraReducers: {
+    [fetchTasks.pending](state) {
+      state.isLoading = true;
     },
-
-    deleteTask(state, action) {
-      const index = state.findIndex(task => task.id === action.payload);
-      state.splice(index, 1);
+    [fetchTasks.fulfilled](state, { payload }) {
+      state.isLoading = false;
+      state.error = null;
+      state.items = payload;
     },
-    toggleCompleted(state, action) {
-      for (const task of state) {
-        if (task.id === action.payload) {
-          task.completed = !task.completed;
-          break;
-        }
-      }
+    [fetchTasks.rejected](state, { payload }) {
+      state.isLoading = false;
+      state.error = payload;
+    },
+    [addTask.pending](state) {
+      state.isLoading = true;
+    },
+    [addTask.fulfilled](state, { payload }) {
+      state.isLoading = false;
+      state.error = null;
+      state.items.push(payload);
+    },
+    [addTask.rejected](state, { payload }) {
+      state.isLoading = false;
+      state.error = payload;
+    },
+    [deleteTask.pending](state) {
+      state.isLoading = true;
+    },
+    [deleteTask.fulfilled](state, { payload }) {
+      state.isLoading = false;
+      state.error = null;
+      const index = state.items.findIndex(task => task.id === payload.id);
+      state.items.splice(index, 1);
+    },
+    [deleteTask.rejected](state, { payload }) {
+      state.isLoading = false;
+      state.error = payload;
+    },
+    [toggleCompleted.pending](state) {
+      state.isLoading = true;
+    },
+    [toggleCompleted.fulfilled](state, { payload }) {
+      state.isLoading = false;
+      state.error = null;
+      const index = state.items.findIndex(task => task.id === payload.id);
+      state.items.splice(index, 1, payload);
+    },
+    [toggleCompleted.rejected](state, { payload }) {
+      state.isLoading = false;
+      state.error = payload;
     },
   },
 });
 
-const persistConfig = {
-  key: 'tasks',
-  storage,
-  blacklist: ['filters'],
-};
-
-export const tasksReducer = persistReducer(persistConfig, tasksSlice.reducer);
-
-export const { addTask, deleteTask, toggleCompleted } = tasksSlice.actions;
-// export const tasksReducer = tasksSlice.reducer;
+export const tasksReducer = tasksSlice.reducer;
