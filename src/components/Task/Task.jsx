@@ -2,12 +2,14 @@ import { MdClose } from 'react-icons/md';
 import css from './Task.module.css';
 import { useDispatch } from 'react-redux';
 import { deleteTask, toggleCompleted } from 'redux/operation';
+import Notiflix from 'notiflix';
 
 export const Task = ({ task }) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
     dispatch(deleteTask(task.id));
+    Notiflix.Notify.success(`Task deleted`);
   };
 
   const handleToggle = () => {

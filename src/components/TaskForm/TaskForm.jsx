@@ -2,6 +2,7 @@ import { Button } from 'components/Button/Button';
 import css from './TaskForm.module.css';
 import { useDispatch } from 'react-redux';
 import { addTask } from 'redux/operation';
+import Notiflix from 'notiflix';
 
 export const TaskForm = () => {
   const dispatch = useDispatch();
@@ -10,6 +11,7 @@ export const TaskForm = () => {
     event.preventDefault();
     const form = event.target;
     dispatch(addTask(form.elements.text.value));
+    Notiflix.Notify.success(`Task added`);
     form.reset();
   };
 
